@@ -1,0 +1,129 @@
+diff --git a/includes/settings.h b/includes/settings.h
+index 829b8ed..b8b6333 100644
+--- a/includes/settings.h
++++ b/includes/settings.h
+@@ -197,6 +197,9 @@ public:
+ 
+ 	// Checks whether all necessary settings are given
+ 	static void checkAndApplySettings();
++
++	// Cleanup state
++	static void cleanup();
+ };
+ 
+ #endif
+diff --git a/src/settings.cpp b/src/settings.cpp
+index 2859368..5830574 100644
+--- a/src/settings.cpp
++++ b/src/settings.cpp
+@@ -149,7 +149,6 @@ void Settings::printSettings(){
+ void Settings::checkAndApplySettings(){
+ 	unsigned int i;
+ 	bool conflict = false;
+-	fprintf(stderr, "Checking for configuration conflicts...");
+ 
+ 	if(outerSize < 3){
+ 		fprintf(stderr, "The polygon must have at least 3 vertices, given number %d\n", outerSize);
+@@ -189,17 +188,9 @@ void Settings::checkAndApplySettings(){
+ 		}
+ 	}
+ 
+-	if(!conflict)
+-		fprintf(stderr, "no conflicts\n\n");
+-	else
+-		fprintf(stderr, "\n");
+-
+ 
+ 	// Apply settings
+ 
+-	if(feedback == FeedbackMode::MUTE)
+-		fprintf(stderr, "Command line muted!\n");
+-
+ 	// Generate and start Timer
+ 	timer = new Timer();
+ 	(*timer).start();
+@@ -223,3 +214,57 @@ void Settings::checkAndApplySettings(){
+ 	if(arithmetics == Arithmetics::EXACT)
+ 		exactinit();
+ }
++
++void Settings::cleanup() {
++    // Reset polygon parameters
++    nrInnerPolygons = 0;
++    outerSize = 0;
++    innerSizes.clear();
++    holeInsertionAtStart = false;
++
++    // Reset initial polygon parameters
++    initialSize = 20;
++    radiusPolygon = 0.1;
++    radiusHole = 0.05;
++    boxSize = 3.0;
++    initialTranslationFactor = 100;
++    initialTranslationNumber = -1;
++
++    // Reset translation parameters
++    kinetic = false;
++    arithmetics = Arithmetics::DOUBLE;
++    stddevDiv = 3;
++    localChecking = true;
++    globalChecking = false;
++    additionalTrans = 0;
++
++    // Reset insertion parameters
++    insertionTries = 100;
++    minLength = 0.0000001;
++    weightedEdgeSelection = true;
++
++    // Clean up utilities
++    delete timer;
++    timer = nullptr;
++
++    // Clean up random generator
++    delete generator;
++    generator = nullptr;
++    fixedSeed = false;
++    seed = 0;
++
++    // Reset feedback settings
++    feedback = FeedbackMode::DEFAULT;
++    outputFormat = OutputFormat::GRAPHML;
++    delete[] polygonFile;
++    polygonFile = nullptr;
++    triangulationOutputRequired = false;
++    delete[] triangulationFile;
++    triangulationFile = nullptr;
++    enableStats = false;
++    delete[] statisticsFile;
++    statisticsFile = nullptr;
++
++    simplicityCheck = false;
++    timing = 0;
++}
+\ No newline at end of file
+diff --git a/includes/tpolygon.h b/includes/tpolygon.h
+index bec4246..c7dc167 100644
+--- a/includes/tpolygon.h
++++ b/includes/tpolygon.h
+@@ -197,6 +197,8 @@ public:
+ 		Checks the correctness of the SelectionTree
+ 	*/
+ 	void checkST() const;
++
++	static void resetCounter();
+ };
+ 
+ #endif
+diff --git a/src/tpolygon.cpp b/src/tpolygon.cpp
+index 1d4d9d3..c8981c3 100644
+--- a/src/tpolygon.cpp
++++ b/src/tpolygon.cpp
+@@ -171,3 +171,7 @@ void TPolygon::checkST() const{
+ 
+ 	fprintf(stderr, "SelectionTree successfully checked\n");
+ }
++
++void TPolygon::resetCounter(){
++	N = 0;
++}
+

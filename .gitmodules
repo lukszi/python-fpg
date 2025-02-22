@@ -1,0 +1,3 @@
+[submodule "genpoly-fpg"]
+	path = genpoly-fpg
+	url = https://github.com/cgalab/genpoly-fpg.git
