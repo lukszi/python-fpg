@@ -25,7 +25,7 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
-        atexit.register(self.cleanup_submodule)
+        # atexit.register(self.cleanup_submodule)
 
     def cleanup_submodule(self):
         try:
